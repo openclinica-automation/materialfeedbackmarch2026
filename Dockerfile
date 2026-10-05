@@ -1,6 +1,7 @@
 FROM nginx:alpine
 
 COPY index.html /usr/share/nginx/html/index.html
+COPY report-2026-data.json /usr/share/nginx/html/report-2026-data.json
 COPY default.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 8080

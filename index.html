@@ -207,11 +207,45 @@
   .trend-title { font-size: 12px; font-weight: 600; color: var(--gray-700);
     text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 12px; }
 
+  /* ── REPORT TABS ── */
+  .dashboard-tabs {
+    display: flex; gap: 24px; margin-bottom: 24px;
+    border-bottom: 1px solid var(--gray-200);
+  }
+  .dashboard-tab {
+    background: transparent; border: 0; border-bottom: 3px solid transparent;
+    color: var(--gray-700); cursor: pointer; font: 600 13px 'DM Sans', sans-serif;
+    padding: 10px 2px; margin-bottom: -1px;
+  }
+  .dashboard-tab[aria-selected="true"] {
+    color: var(--navy); border-bottom-color: var(--blue);
+  }
+  .dashboard-tab:focus-visible { outline: 2px solid var(--mid-blue); outline-offset: 3px; }
+  .report-note { color: var(--gray-700); font-size: 11px; margin-top: 12px; }
+  [hidden] { display: none !important; }
+
   /* ── RESPONSIVE ── */
   @media (max-width: 900px) {
     .sidebar { width: 180px; }
     .main { margin-left: 180px; padding: 20px; }
     .summary-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .sidebar { position: relative; width: 100%; height: auto; padding: 12px; overflow: visible; }
+    .sidebar-logo { padding: 0 4px 10px; margin-bottom: 8px; }
+    #archiveNavigation, #year2026Navigation {
+      display: flex; gap: 4px; overflow-x: auto; scrollbar-width: thin;
+    }
+    .nav-section { display: none; }
+    .nav-item { flex: 0 0 auto; border-left: 0; border-bottom: 2px solid transparent; padding: 8px 10px; }
+    .nav-item:hover, .nav-item.active { border-left-color: transparent; border-bottom-color: var(--mid-blue); }
+    .main { margin-left: 0; padding: 16px; max-width: none; }
+    .dashboard-tabs { gap: 16px; overflow-x: auto; }
+    .hero { padding: 28px; }
+    .hero h1 { font-size: 28px; }
+    .hero-stats { gap: 18px; flex-wrap: wrap; }
+    .hero-stat-val { font-size: 26px; }
+    .sat-lbl { width: 110px; }
   }
 </style>
 </head>
@@ -222,15 +256,30 @@
   <div class="sidebar-logo">
     Material Feedback<span>Analysis Report</span>
   </div>
-  <div class="nav-section">Overview</div>
-  <a class="nav-item active" href="#summary">Summary</a>
-  <div class="nav-section">Edit Types</div>
-  <a class="nav-item" href="#section-0">Ad Copy</a><a class="nav-item" href="#section-1">Ad Creatives</a><a class="nav-item" href="#section-2">Carousel</a><a class="nav-item" href="#section-3">Landing Page</a><a class="nav-item" href="#section-4">Physical Flyer</a><a class="nav-item" href="#section-5">Screening Form</a><a class="nav-item" href="#section-6">Thank You page(s)</a><a class="nav-item" href="#section-7">Video Creatives</a>
+  <div id="archiveNavigation">
+    <div class="nav-section">Overview</div>
+    <a class="nav-item active" href="#summary">Summary</a>
+    <div class="nav-section">Edit Types</div>
+    <a class="nav-item" href="#section-0">Ad Copy</a><a class="nav-item" href="#section-1">Ad Creatives</a><a class="nav-item" href="#section-2">Carousel</a><a class="nav-item" href="#section-3">Landing Page</a><a class="nav-item" href="#section-4">Physical Flyer</a><a class="nav-item" href="#section-5">Screening Form</a><a class="nav-item" href="#section-6">Thank You page(s)</a><a class="nav-item" href="#section-7">Video Creatives</a>
+  </div>
+  <div id="year2026Navigation" hidden>
+    <div class="nav-section">2026 Overview</div>
+    <a class="nav-item active" href="#summary2026">Summary</a>
+    <div class="nav-section">Edit Types</div>
+    <div id="year2026SectionNavigation"></div>
+  </div>
 </nav>
 
 <!-- MAIN -->
 <div class="main">
+  <div class="dashboard-tabs" role="tablist" aria-label="Report period">
+    <button class="dashboard-tab" id="archiveTab" type="button" role="tab"
+      aria-selected="true" aria-controls="archiveView" data-dashboard="archive">Mar 2025 – Mar 2026</button>
+    <button class="dashboard-tab" id="year2026Tab" type="button" role="tab"
+      aria-selected="false" aria-controls="year2026View" data-dashboard="2026">2026</button>
+  </div>
 
+  <div class="dashboard-view" id="archiveView" role="tabpanel" aria-labelledby="archiveTab">
   <!-- HERO -->
   <div class="hero" id="summary">
     <h1>Material Feedback Report</h1>
@@ -287,6 +336,76 @@
 
   <!-- SECTIONS -->
   <div id="sections"></div>
+  </div>
+
+  <div class="dashboard-view" id="year2026View" role="tabpanel" aria-labelledby="year2026Tab" hidden>
+    <div class="hero" id="summary2026">
+      <h1>Material Feedback Report</h1>
+      <div class="hero-meta" id="year2026Period">2026</div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-val" id="year2026Total">--</div>
+          <div class="hero-stat-lbl">Form Submissions</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-val" id="year2026AreaCount">--</div>
+          <div class="hero-stat-lbl">Feedback Areas</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-val" id="year2026Average">--</div>
+          <div class="hero-stat-lbl">Avg. Satisfaction / 5</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="year2026LoadError" class="card" hidden>
+      <div class="card-body">2026 dashboard data is unavailable. Regenerate report-2026-data.json from the Asana CSV export.</div>
+    </div>
+
+    <div class="summary-grid">
+      <div class="card" style="grid-column: 1 / -1;">
+        <div class="card-header">Submission Volume &amp; Satisfaction Over Time</div>
+        <div class="card-body">
+          <div class="chart-wrap"><canvas id="year2026TrendChart"></canvas></div>
+          <div class="report-note">Monthly edit-area counts are multi-select and can exceed the number of submissions.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Client Satisfaction</div>
+        <div class="card-body">
+          <div class="overall-sat" id="year2026Satisfaction"></div>
+          <div class="report-note" id="year2026RatingNote"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Submissions by Feedback Area</div>
+        <div class="card-body">
+          <div style="height:260px"><canvas id="year2026AreaChart"></canvas></div>
+          <div class="report-note">A submission can select more than one area.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="summary-grid" id="areaSummary2026">
+      <div class="card" id="statusSummary2026">
+        <div class="card-header">Workflow Status</div>
+        <div class="card-body" id="year2026Statuses"></div>
+      </div>
+      <div class="card">
+        <div class="card-header">Feedback Source</div>
+        <div class="card-body" id="year2026Sources"></div>
+      </div>
+    </div>
+
+    <div class="nav-section" style="display:none">Edit Type Sections</div>
+    <div id="year2026Sections"></div>
+
+    <div class="report-note" id="year2026DataNote">
+      2026 form submissions only. Feedback is grouped into the March report categories; email addresses and phone numbers in comments are omitted.
+    </div>
+  </div>
 
 </div>
 
@@ -386,13 +505,34 @@ function downloadCSV(b64, filename) {
   URL.revokeObjectURL(url);
 }
 
-const sectionsEl = document.getElementById('sections');
-SECTIONS.forEach((s, i) => {
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, character => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[character]);
+}
+
+function renderReportSections(containerId, sectionData, idPrefix, navigationId = null) {
+  const sectionsEl = document.getElementById(containerId);
+  sectionsEl.replaceChildren();
+  const navigation = navigationId ? document.getElementById(navigationId) : null;
+  if (navigation) navigation.replaceChildren();
+
+  sectionData.forEach((s, i) => {
+  const sectionId = `${idPrefix}-section-${i}`;
+  const chartId = `${idPrefix}-chart-${i}`;
+  if (navigation) {
+    const link = document.createElement('a');
+    link.className = 'nav-item';
+    link.href = `#${sectionId}`;
+    link.textContent = s.edit_type;
+    navigation.appendChild(link);
+  }
+
   const top3Html = s.top3.map((t, idx) => `
     <div class="top3-item">
-      <div class="top3-rank">#${idx+1} Issue</div>
-      <div class="top3-cat">${t.cat}</div>
-      <div class="top3-count">${t.count}</div>
+      <div class="top3-rank">#${idx + 1} Issue</div>
+      <div class="top3-cat">${escapeHtml(t.cat)}</div>
+      <div class="top3-count">${t.count.toLocaleString()}</div>
       <div class="top3-lbl">submissions</div>
     </div>
   `).join('');
@@ -401,15 +541,15 @@ SECTIONS.forEach((s, i) => {
     <tr class="cat-row ${c.name === 'No Feedback Provided' ? 'no-fb-row' : ''}"
         style="background: ${c.name === 'No Feedback Provided' ? '#fafafa' : 'white'}">
       <td>
-        <div class="cat-name">${c.name}</div>
+        <div class="cat-name">${escapeHtml(c.name)}</div>
         ${c.example && c.name !== 'No Feedback Provided'
-          ? `<div class="cat-example">"${c.example.replace(/"/g,"'")}"</div>`
+          ? `<div class="cat-example">"${escapeHtml(c.example)}"</div>`
           : ''}
       </td>
-      <td><span class="cat-count">${c.count}</span></td>
+      <td><span class="cat-count">${c.count.toLocaleString()}</span></td>
       <td>
-        ${c.name !== 'No Feedback Provided'
-          ? `<button class="download-btn" onclick="downloadCSV('${c.csv_b64}','${c.filename}')">
+        ${c.name !== 'No Feedback Provided' && c.count
+          ? `<button class="download-btn" onclick="downloadCSV('${c.csv_b64}','${c.filename}')" aria-label="Download ${escapeHtml(c.name)} feedback CSV">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
                 <polyline points="7 10 12 15 17 10"/>
@@ -425,7 +565,6 @@ SECTIONS.forEach((s, i) => {
 
   let trendHtml = '';
   if (s.section_chart) {
-    const chartId = `chart_${i}`;
     trendHtml = `
       <div class="trend-section">
         <div class="trend-title">Edit Volume &amp; Satisfaction Trend</div>
@@ -436,15 +575,15 @@ SECTIONS.forEach((s, i) => {
 
   const div = document.createElement('div');
   div.className = 'section-card';
-  div.id = `section-${i}`;
+  div.id = sectionId;
   div.innerHTML = `
-    <div class="section-hero" style="background: linear-gradient(135deg, ${s.color} 0%, ${s.color}CC 100%)">
+    <div class="section-hero" style="background: linear-gradient(135deg, ${escapeHtml(s.color)} 0%, ${escapeHtml(s.color)}CC 100%)">
       <div>
-        <h2>${s.edit_type}</h2>
-        <div style="opacity:.7;font-size:12px;margin-top:4px">${s.count} submissions</div>
+        <h2>${escapeHtml(s.edit_type)}</h2>
+        <div style="opacity:.7;font-size:12px;margin-top:4px">${s.count.toLocaleString()} submissions</div>
       </div>
       <div class="section-hero-meta">
-        <div class="section-avg">${s.avg_sat.toFixed(1)} / 5</div>
+        <div class="section-avg">${s.avg_sat ? s.avg_sat.toFixed(1) : 'N/A'} / 5</div>
         <div>avg satisfaction</div>
       </div>
     </div>
@@ -470,7 +609,6 @@ SECTIONS.forEach((s, i) => {
   sectionsEl.appendChild(div);
 
   if (s.section_chart) {
-    const chartId = `chart_${i}`;
     const ctx = document.getElementById(chartId).getContext('2d');
     new Chart(ctx, {
       data: {
@@ -509,18 +647,160 @@ SECTIONS.forEach((s, i) => {
       }
     });
   }
-});
+  });
+}
+
+renderReportSections('sections', SECTIONS, 'archive');
 
 // ── ACTIVE NAV ON SCROLL ──────────────────────────────────────────────────
-const navItems = document.querySelectorAll('.nav-item');
 window.addEventListener('scroll', () => {
-  let current = 'summary';
-  document.querySelectorAll('[id]').forEach(el => {
-    if (window.scrollY >= el.offsetTop - 100) current = el.id;
+  const navItems = Array.from(document.querySelectorAll('.nav-item')).filter(item => !item.closest('[hidden]'));
+  let current = navItems[0]?.getAttribute('href')?.slice(1) || '';
+  navItems.forEach(item => {
+    const target = document.querySelector(item.getAttribute('href'));
+    if (target && window.scrollY >= target.offsetTop - 100) current = target.id;
+    item.classList.toggle('active', item.getAttribute('href') === `#${current}`);
   });
-  navItems.forEach(a => {
-    a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+});
+
+let year2026Rendered = false;
+
+function appendBreakdownTable(containerId, rows, firstColumn) {
+  const container = document.getElementById(containerId);
+  const table = document.createElement('table');
+  table.className = 'cat-table';
+  const head = document.createElement('thead');
+  const headerRow = document.createElement('tr');
+  [firstColumn, 'Submissions'].forEach(label => {
+    const cell = document.createElement('th');
+    cell.textContent = label;
+    headerRow.appendChild(cell);
   });
+  head.appendChild(headerRow);
+  const body = document.createElement('tbody');
+  rows.forEach(row => {
+    const tableRow = document.createElement('tr');
+    const name = document.createElement('td');
+    name.textContent = row.name;
+    const count = document.createElement('td');
+    count.textContent = row.count.toLocaleString();
+    tableRow.append(name, count);
+    body.appendChild(tableRow);
+  });
+  table.append(head, body);
+  container.replaceChildren(table);
+}
+
+function render2026Dashboard(data) {
+  const formatDate = value => new Intl.DateTimeFormat('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC'
+  }).format(new Date(`${value}T12:00:00Z`));
+  const monthLabel = value => new Intl.DateTimeFormat('en-US', {
+    month: 'short', year: '2-digit', timeZone: 'UTC'
+  }).format(new Date(`${value}-01T12:00:00Z`));
+
+  document.getElementById('year2026Total').textContent = data.totalSubmissions.toLocaleString();
+  document.getElementById('year2026AreaCount').textContent = data.editTypeCount.toLocaleString();
+  document.getElementById('year2026Average').textContent = data.averageSatisfaction?.toFixed(2) ?? 'N/A';
+  document.getElementById('year2026Period').textContent = `${formatDate(data.period.start)} – ${formatDate(data.period.end)}`;
+  document.getElementById('year2026RatingNote').textContent =
+    `${data.ratedSubmissions.toLocaleString()} rated submissions; ${data.unratedSubmissions.toLocaleString()} did not include a rating.`;
+
+  const satisfaction = document.getElementById('year2026Satisfaction');
+  satisfaction.replaceChildren();
+  data.satisfaction.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'sat-row';
+    const label = document.createElement('span');
+    label.className = 'sat-lbl';
+    label.textContent = `${item.score} — ${item.label}`;
+    const barWrap = document.createElement('div');
+    barWrap.style.flex = '1';
+    const track = document.createElement('div');
+    track.className = 'sat-bar-wrap';
+    const bar = document.createElement('div');
+    bar.className = 'sat-bar';
+    bar.style.width = `${data.ratedSubmissions ? Math.round(item.count / data.ratedSubmissions * 100) : 0}%`;
+    bar.style.background = item.color;
+    track.appendChild(bar);
+    barWrap.appendChild(track);
+    const count = document.createElement('span');
+    count.className = 'sat-num';
+    count.textContent = item.count.toLocaleString();
+    row.append(label, barWrap, count);
+    satisfaction.appendChild(row);
+  });
+
+  appendBreakdownTable('year2026Statuses', data.statuses, 'Status');
+  appendBreakdownTable('year2026Sources', data.sources, 'Source');
+  renderReportSections('year2026Sections', data.sections, 'year2026', 'year2026SectionNavigation');
+
+  const trendDatasets = data.editTypes.map(item => ({
+    type: 'bar', label: item.name, data: item.monthly,
+    backgroundColor: `${item.color}CC`, stack: 'areas', yAxisID: 'y'
+  }));
+  trendDatasets.push({
+    type: 'line', label: 'Avg Satisfaction', data: data.months.map(item => item.avgSatisfaction),
+    borderColor: '#E65100', backgroundColor: 'rgba(230,81,0,0.1)', borderWidth: 2.5,
+    pointRadius: 4, pointBackgroundColor: '#E65100', tension: 0.3, fill: false, yAxisID: 'y2'
+  });
+  new Chart(document.getElementById('year2026TrendChart').getContext('2d'), {
+    data: { labels: data.months.map(item => monthLabel(item.month)), datasets: trendDatasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 12 } } },
+      scales: {
+        x: { stacked: true, ticks: { font: { size: 10 }, maxRotation: 45 } },
+        y: { stacked: true, position: 'left', title: { display: true, text: 'Edit Area Mentions' } },
+        y2: { position: 'right', min: 1, max: 5, title: { display: true, text: 'Avg Satisfaction' }, grid: { drawOnChartArea: false } }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('year2026AreaChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: data.editTypes.map(item => item.name),
+      datasets: [{ data: data.editTypes.map(item => item.count), backgroundColor: data.editTypes.map(item => item.color), borderRadius: 4 }]
+    },
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { x: { beginAtZero: true }, y: { ticks: { font: { size: 10 } } } }
+    }
+  });
+  year2026Rendered = true;
+}
+
+async function activateDashboard(name) {
+  const is2026 = name === '2026';
+  const archiveView = document.getElementById('archiveView');
+  const year2026View = document.getElementById('year2026View');
+  archiveView.hidden = is2026;
+  year2026View.hidden = !is2026;
+  document.getElementById('archiveNavigation').hidden = is2026;
+  document.getElementById('year2026Navigation').hidden = !is2026;
+  document.querySelectorAll('.dashboard-tab').forEach(tab => {
+    const selected = tab.dataset.dashboard === name;
+    tab.setAttribute('aria-selected', String(selected));
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  if (is2026 && !year2026Rendered) {
+    try {
+      const response = await fetch('./report-2026-data.json');
+      if (!response.ok) throw new Error('2026 aggregate data was not found');
+      render2026Dashboard(await response.json());
+    } catch (error) {
+      document.getElementById('year2026LoadError').hidden = false;
+    }
+  }
+  window.dispatchEvent(new Event('resize'));
+}
+
+document.querySelectorAll('.dashboard-tab').forEach(tab => {
+  tab.addEventListener('click', () => activateDashboard(tab.dataset.dashboard));
 });
 </script>
 </body>
