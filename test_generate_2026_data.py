@@ -108,7 +108,7 @@ class ClassifyFeedbackTests(unittest.TestCase):
     def test_report_build_uses_the_new_taxonomy(self):
         row = {
             "Created At": "01/15/26",
-            "Notes": "Name: Client\n\nFor the ad copy, please list requested edits: Change the age range to adults 18 to 35.",
+            "Notes": "Name: Client\n\nFor the ad copy, please list requested edits: Change the age range to adults 18 to 35. Update the age limits to include adults ages 18 to 35.",
             "Edit Type": "Ad Copy",
             "Client Satisfaction Level": "4",
             "Feedback Source": "Study Team",
@@ -138,6 +138,7 @@ class ClassifyFeedbackTests(unittest.TestCase):
         self.assertEqual((category["name"], category["count"]), ("Eligibility: age or participant group", 2))
         self.assertTrue(category["description"])
         self.assertEqual(len(category["examples"]), 2)
+        self.assertIn("Update the age limits", category["examples"][0])
 
 
 if __name__ == "__main__":

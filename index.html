@@ -164,6 +164,8 @@
   .cat-examples { margin: 5px 0 0; padding-left: 18px; color: var(--gray-400);
     font-size: 11px; line-height: 1.45; }
   .cat-examples li + li { margin-top: 3px; }
+  .cat-example-label { color: var(--gray-700); font-size: 10px; font-weight: 700;
+    margin-top: 6px; text-transform: uppercase; letter-spacing: 0.35px; }
   .cat-count { font-weight: 700; font-size: 15px; color: var(--blue); }
   .no-fb-row td { color: var(--gray-400); font-style: italic; }
   .download-btn {
@@ -543,7 +545,7 @@ function renderReportSections(containerId, sectionData, idPrefix, navigationId =
 
   const catRowsHtml = s.categories.map(c => {
     const examples = c.examples?.length
-      ? `<ul class="cat-examples">${c.examples.map(example => `<li>${escapeHtml(example)}</li>`).join('')}</ul>`
+      ? `<div class="cat-example-label">Examples from feedback</div><ul class="cat-examples">${c.examples.map(example => `<li>${escapeHtml(example)}</li>`).join('')}</ul>`
       : c.example && c.name !== 'No Feedback Provided'
         ? `<div class="cat-example">"${escapeHtml(c.example)}"</div>`
         : '';

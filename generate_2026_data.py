@@ -486,9 +486,10 @@ def build_report(input_path):
             for record in records:
                 writer.writerow([record["study_id"], area, record["feedback"], category_name, record["satisfaction"], record["created_at"]])
             csv_b64 = base64.b64encode(csv_buffer.getvalue().encode("utf-8-sig")).decode("ascii")
-            example = next((record["feedback"].replace("\n", " ")[:220] for record in records if record["feedback"]), "")
+            example = next((" ".join(record["feedback"].split())[:220] for record in records if record["feedback"]), "")
             examples = []
             seen_examples = set()
+            example_candidates = []
             for record in records:
                 text = " ".join(record["feedback"].split())
                 if not text:
@@ -497,9 +498,10 @@ def build_report(input_path):
                 if key in seen_examples:
                     continue
                 seen_examples.add(key)
-                examples.append(text[:220])
-                if len(examples) == 3:
-                    break
+                example_candidates.append(text)
+            example_candidates.sort(key=len, reverse=True)
+            for text in example_candidates[:3]:
+                examples.append(text[:220] + ("…" if len(text) > 220 else ""))
             categories.append({
                 "name": category_name,
                 "count": len(records),
