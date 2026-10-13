@@ -50,37 +50,89 @@ NEXT_QUESTION = re.compile(
 NOTES_END = re.compile(r"\n+(?:[-\u2014\u2013]{6,}\s*\n+This task was submitted through Customer Feedback|This task was submitted through Customer Feedback)", re.IGNORECASE)
 EMAIL_ADDRESS = re.compile(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", re.IGNORECASE)
 PHONE_NUMBER = re.compile(r"(?<!\w)(?:\+?1[\s.-]?)?(?:\(\d{3}\)|\d{3})[\s.-]\d{3}[\s.-]\d{4}(?!\w)")
-AREA_CATEGORY_ADDITIONS = {
-    "Physical Flyer": [
-        "Eligibility Criteria Wording Change",
-        "Incorrect Compensation Details",
-        "Inappropriate Imagery",
-        "Incorrect Terminology or Wording",
-        "Layout or Formatting Issue",
-        "Missing IRB/HIC Compliance Language",
-        "Unclear Call to Action",
-    ],
-    "Thank You page(s)": [
-        "Eligibility Criteria Wording Change",
-        "Incorrect Compensation Details",
-        "Incorrect Terminology or Wording",
-        "Incorrect Study Participation Details",
-        "Incorrect or Outdated Logo",
-        "Unclear Call to Action",
-        "Missing Contact Information",
-        "Spelling or Grammar Error",
-        "Layout or Formatting Issue",
-    ],
-}
-AREA_FALLBACK_CATEGORIES = {
-    "Ad Copy": "Incorrect Language in Ad Copy",
-    "Ad Creatives": "Incorrect Terminology or Wording",
-    "Carousel": "Incorrect Terminology or Wording",
-    "Landing Page": "Incorrect Terminology or Wording",
-    "Physical Flyer": "Incorrect Terminology or Wording",
-    "Screening Form": "Incorrect Question Wording",
-    "Thank You page(s)": "Incorrect Terminology or Wording",
-    "Video Creatives": "Incorrect Terminology or Wording",
+ASSET_HEADER = re.compile(
+    r"^(?:ads?|videos?)\s*#?\s*\d+(?:\s*,?\s*(?:and|&)?\s*#?\d+)*\s*:?\s*$",
+    re.IGNORECASE,
+)
+
+CATEGORY_ORDER = [
+    "Eligibility: age or participant group",
+    "Eligibility: diagnosis or symptoms",
+    "Eligibility: inclusion/exclusion criteria",
+    "Study participation: visits, schedule, or duration",
+    "Study participation: procedures or treatment",
+    "Study details: purpose or design",
+    "Screening form: question count or flow",
+    "Screening form: question wording",
+    "Screening form: response options",
+    "Compensation: amount or accuracy",
+    "Compensation: prominence or presentation",
+    "Terminology: clinical or study terms",
+    "Copy: word choice and phrasing",
+    "Copy: content additions or removals",
+    "Copy: sentence or passage revision",
+    "Copy: clarity and reading level",
+    "Copy: tone and audience fit",
+    "Copy: repetition or redundancy",
+    "Copy: translation or language consistency",
+    "Inclusive or non-stigmatizing language",
+    "Privacy, consent, or data-use language",
+    "Required compliance or disclosure language",
+    "Visuals: imagery or representation",
+    "Video: audio, pacing, or editing",
+    "Branding: logo or watermark",
+    "Organization: location or institution",
+    "Contact information",
+    "Links or call to action",
+    "Creative asset: scope, version, or placement",
+    "Confirmation or eligibility outcome messaging",
+    "Layout and readability",
+    "Study title or naming",
+    "Spelling or grammar",
+    "Positive feedback",
+    "No Feedback Provided",
+    "Attachment referenced — review",
+    "Other requested edit — review",
+]
+
+THEME_DESCRIPTIONS = {
+    "Eligibility: age or participant group": "Comments about the intended participants, such as age limits, life stage, or who the study is seeking.",
+    "Eligibility: diagnosis or symptoms": "Comments clarifying which diagnoses, symptoms, or health experiences qualify participants.",
+    "Eligibility: inclusion/exclusion criteria": "Comments adding, removing, or correcting a requirement that determines who can take part.",
+    "Study participation: visits, schedule, or duration": "Comments about the number or timing of visits, time commitment, or study duration.",
+    "Study participation: procedures or treatment": "Comments explaining what participants will do, receive, or experience during the study.",
+    "Study details: purpose or design": "Comments clarifying the research question, purpose, background, or overall study design.",
+    "Screening form: question count or flow": "Comments about adding or removing screener questions, their order, or conditional branching.",
+    "Screening form: question wording": "Comments asking to clarify, correct, or rewrite a screening question.",
+    "Screening form: response options": "Comments about the available answers or selection controls in a screening question.",
+    "Compensation: amount or accuracy": "Comments correcting the payment or incentive amount, what it covers, or when it is received.",
+    "Compensation: prominence or presentation": "Comments about how prominently payment is mentioned or visually emphasized.",
+    "Terminology: clinical or study terms": "Comments replacing, explaining, or correcting medical, research, or other technical terminology.",
+    "Copy: word choice and phrasing": "Specific suggestions to change a word or short phrase without changing the broader message.",
+    "Copy: content additions or removals": "Requests to add, remove, or retain information, details, or sections in the copy.",
+    "Copy: sentence or passage revision": "Requests to rewrite or revise a sentence, paragraph, headline, or other passage.",
+    "Copy: clarity and reading level": "Comments that text is confusing, too complex, too wordy, or otherwise difficult to understand.",
+    "Copy: tone and audience fit": "Comments about whether the wording feels appropriate, engaging, sensitive, or relatable to its audience.",
+    "Copy: repetition or redundancy": "Comments that information or wording is repeated too often or unnecessarily.",
+    "Copy: translation or language consistency": "Requests for translation or consistent language across materials.",
+    "Inclusive or non-stigmatizing language": "Comments about respectful, inclusive wording and avoiding assumptions or stigmatizing language.",
+    "Privacy, consent, or data-use language": "Comments explaining confidentiality, anonymity, consent, or how participant data is used.",
+    "Required compliance or disclosure language": "Comments about required review-board, sponsor, policy, or other disclosure language.",
+    "Visuals: imagery or representation": "Comments about the chosen images, people depicted, visual accuracy, or representation.",
+    "Video: audio, pacing, or editing": "Comments about sound, voiceover, captions, timing, transitions, or video editing.",
+    "Branding: logo or watermark": "Comments about the correct logo, branding, or watermark use.",
+    "Organization: location or institution": "Comments correcting a clinic, institution, department, address, or other location reference.",
+    "Contact information": "Comments adding or correcting an email address, phone number, or other way to contact the study team.",
+    "Links or call to action": "Comments about links, buttons, redirects, or wording that guides the audience to take the next step.",
+    "Creative asset: scope, version, or placement": "Comments about which creative files, versions, placements, or assets should be used or changed.",
+    "Confirmation or eligibility outcome messaging": "Comments about submission confirmations or messages shown when screening is complete or someone is ineligible.",
+    "Layout and readability": "Comments about visual layout, formatting, font, spacing, contrast, or text legibility.",
+    "Study title or naming": "Comments correcting or changing the study title, name, or headline label.",
+    "Spelling or grammar": "Comments identifying spelling, punctuation, or grammatical errors.",
+    "Positive feedback": "Positive reactions or approval without a specific requested change.",
+    "No Feedback Provided": "No substantive feedback was entered for this material.",
+    "Attachment referenced — review": "The comment points to an attachment or tracked changes that are not available in this report; review the source material.",
+    "Other requested edit — review": "A requested change is present, but the comment lacks enough context to assign it confidently to a specific theme.",
 }
 
 
@@ -130,26 +182,42 @@ def extract_area_answer(notes, area):
 def feedback_units(answer):
     if not answer or re.fullmatch(r"(?:no|n/?a|none|no edits|no changes|not applicable)[.! ]*", answer, re.IGNORECASE):
         return []
-    if re.match(r"^(?:(?:please )?see (?:the )?(?:attached|attachment|above|below)|attached (?:file|document|version)|same (?:as|comments?)|see comments below|see above feedback|see below|see spreadsheet|same comments as)\b", answer, re.IGNORECASE):
+    if re.match(r"^(?:(?:please )?see (?:the )?(?:above|below)|same (?:as|comments?)|see comments below|see above feedback|see below|see spreadsheet|same comments as|see avove and fix for everything)\b", answer, re.IGNORECASE):
         return []
     units = []
     for paragraph in re.split(r"\n+", answer):
         pieces = re.split(r"(?<=[.!?])\s+(?=[A-Z0-9“\"‘(])", paragraph)
         for piece in pieces:
-            piece = re.sub(r"^\s*(?:[-*•]+|\d+[.)])\s*", "", piece).strip()
+            piece = re.sub(r"^\s*(?:[-*•✔✓✅☑]\ufe0f?|\d+[.)]|[oO]\s+(?=[A-Z]))\s*", "", piece).strip()
+            if re.fullmatch(r"\d{1,2}[a-z]{0,2}[.:]?", piece, re.IGNORECASE):
+                continue
             if re.fullmatch(r"(?:file|video):\s*[\w./ -]+[.]?", piece, re.IGNORECASE):
+                continue
+            if re.fullmatch(r"build\s*clinical[_\w.() -]*", piece, re.IGNORECASE):
+                continue
+            if re.fullmatch(r"[A-Z]{2,}\d+[A-Z0-9]*\s+edits?:", piece, re.IGNORECASE):
+                continue
+            if re.fullmatch(r"\d+[-_](?:tmplt|templt|template)[\w.-]*", piece, re.IGNORECASE):
                 continue
             if re.fullmatch(r"[\w./() -]+\.(?:pdf|docx?|pptx?|xlsx?)(?:\([\w. -]+\))?", piece, re.IGNORECASE):
                 continue
-            if re.fullmatch(r"(?:see (?:above|below)|same (?:as|comments?)|same comments as.*|see comments below|see above feedback|see below|see spreadsheet)[.! ]*", piece, re.IGNORECASE):
+            if re.fullmatch(r"(?:see (?:above|below)|same (?:as|comments?|thing as before)|same comments as.*|see comments below|see above feedback|see below|see spreadsheet)[.! ]*", piece, re.IGNORECASE):
                 continue
-            if re.fullmatch(r"(?:headlines?\s*(?:#?\d+(?:\s*(?:and|,|&)\s*#?\d+)*)?|primary text|fast facts|faq|additional information|landing page|ad copy|ad creatives|video creatives|carousel)\s*:?", piece, re.IGNORECASE):
+            if ASSET_HEADER.fullmatch(piece) or re.fullmatch(
+                r"(?:headlines?\s*(?:#?\d+(?:\s*(?:and|,|&)\s*#?\d+)*)?|primary text|fast facts|faq|additional information(?: section)?|summary blurb(?: at top)?|in additional info|landing page|ad copy|ad creatives|video creatives|carousel|screening form|study background|is this study for me|overall feedback|edit down|what will happen if i participate in the study|so,? for example|for example|all (?:ad|video) creatives?(?: need to include| need to| must include)?|(?:dr|mr|ms|mrs)\.?)\s*:?",
+                piece,
+                re.IGNORECASE,
+            ):
                 continue
             if piece and piece.lower().rstrip(":") not in {
-                "see above", "see attached", "n/a", "none", "headlines", "headline",
+                "see above", "n/a", "none", "headlines", "headline",
                 "primary text", "ad copy", "ad creatives", "general feedback",
                 "changes requested", "reasoning", "overall", "thank you page",
             }:
+                if re.fullmatch(r"(?:hi|hello|dear)\s+\w+[,:]?", piece, re.IGNORECASE):
+                    continue
+                if re.fullmatch(r"(?:they are requesting the following|please see above and fix for everything)[.!: ]*", piece, re.IGNORECASE):
+                    continue
                 units.append(piece)
     return units
 
@@ -159,94 +227,107 @@ def redact_contact_details(value):
     return PHONE_NUMBER.sub("[phone removed]", value)
 
 
-def classify_feedback(area, text, category_names):
+def classify_feedback(area, text, category_names=None):
     value = text.lower()
-
-    def choose(*names):
-        return next((name for name in names if name in category_names), None)
 
     def has(pattern):
         return re.search(pattern, value) is not None
 
-    if has(r"\b(?:irb|hic|protocol number|irb number|institutional review board|approval language|principal investigator|pi name|department of defense|sponsored by)\b"):
-        return choose("Missing IRB/HIC Compliance Language")
-    if has(r"\b(?:logo|watermark|branding)\b"):
-        return choose("Incorrect or Outdated Logo", "Incorrect Location or Organization Info")
+    if has(r"\b(?:great|looks good|love|we like|thank you|thanks|we appreciate your (?:interest|time|willingness)|approved|acceptable|no further edits|ready to submit)\b") and not has(r"\b(?:change|replace|remove|add|include|update|revise|reword|rewrite|please|could we|can you|should|needs to)\b"):
+        return "Positive feedback"
+    if has(r"\b(?:translate|translation|spanish|in spanish|language consistency|english only|only in english|bilingual)\b"):
+        return "Copy: translation or language consistency"
+    if has(r"\b(?:stigmatiz\w*|discriminat\w*|exclusionary|non.stigmatizing|inclusive language|offensive|insensitive|assum\w*|stereotyp\w*|every parent|not all parents)\b"):
+        return "Inclusive or non-stigmatizing language"
+    if has(r"\b(?:de.identif\w*|anonymous|anonymized|confidential\w*|privacy|protect(?:ing)? (?:participant|patient|personal) data)\b"):
+        return "Privacy, consent, or data-use language"
+    if has(r"\b(?:irb\w*|hic\w*|protocol number|institutional review board|approval language|principal investigator|pi name|department of defense|sponsored by|consent language|required disclaimer|not permitted|cannot use|must not use|scam advertisements?|scammy|clickbait|misleading|fraud|fakers?)\b"):
+        return "Required compliance or disclosure language"
+    if has(r"\b(?:compensation|payment|paid|stipend|incentive|earnings|dollar amount|money bags?|bag of money|no.cost|free|at no cost)\b") or re.search(r"\$\s*\d|\b\d[\d,]*(?:\.\d+)?\s*(?:%|percent|dollars)\b", value):
+        return "Compensation: prominence or presentation" if has(r"\b(?:no.cost|free|at no cost)\b") else (
+            "Compensation: prominence or presentation"
+            if has(r"\b(?:emphas|lead with|prominent|bold|larger|downplay|too much|overemphas|remove|take out|avoid|not mention|no amount)\b")
+            else "Compensation: amount or accuracy"
+        )
+    if has(r"\b(?:email|e-mail|phone number|contact information|contact details|contact them|contact method)\b"):
+        return "Contact information"
+    if has(r"\b(?:logo|watermark|branding|brand guidelines?)\b"):
+        return "Branding: logo or watermark"
+    if has(r"\b(?:images?|imagery|photo|photograph|picture|visuals?|graphics?|illustration|cartoon|image library|image-library|actor|people images|younger people|older people|older men|racially diverse|ethnicity of individuals portrayed|ethnic background|freckled|landscape|hearing aid|looks? (?:a little )?(?:strange|awkward|uncanny)|uncanny valley|ai.generated|ai look|motion|sleeping on the couch|depict\w*|uniform|drinking heavily|soccer|sport|outdoor activity|mother.child|parent.child|leaf behind|bong|bottle from background|person alone|older woman alone|video footage|black dots|foreground|human reading|looks? odd)\b"):
+        return "Visuals: imagery or representation"
+    if area in {"Video Creatives", "Ad Creatives", "Carousel"} and has(r"\b(?:music|sound|audio|voiceover|voice over|pacing|transition|editing|second frame|frame|slide|lip.read|captions?|subtitles?|speech|slow down|too quickly|screen to screen)\b"):
+        return "Video: audio, pacing, or editing"
     if has(r"\b(?:spelling|spelled|typo|grammatical|grammar|punctuation|misspell)\b"):
-        return choose("Spelling or Grammar Error", "Incorrect Terminology or Wording")
-    if has(r"\b(?:email|e-mail|phone number|contact information|contact details)\b") and has(r"\b(?:add|include|missing|remove|change|update|correct)\b"):
-        return choose("Missing Contact Information", "Incorrect Location or Organization Info")
-    if has(r"\b(?:images?|imagery|photo|photograph|picture|visuals?|graphic|illustration|cartoon|image library|image-library|actor|people images|younger people|older people|older men|racially diverse|ethnicity of individuals portrayed|landscape|hearing aid|looks? (?:a little )?(?:strange|awkward|uncanny)|leaf behind|bong|bottle from background|person alone|older woman alone)\b"):
-        if has(r"\b(?:unclear|confusing|does not|doesn't|not relatable|misleading|hard to understand)\b"):
-            return choose("Unclear Visual Messaging", "Inappropriate Imagery")
-        return choose("Inappropriate Imagery")
-    if has(r"\b(?:compensation|payment|paid|stipend|incentive|earnings|dollar amount|money bags?|bag of money|\d[\d,]*(?:\.\d+)?\s*(?:%|percent|dollars))\b") or re.search(r"\$\s*\d", value):
-        if has(r"\b(?:emphas|lead with|prominent|bold|larger|remove|take out|avoid|not mention|no amount|downplay|too much)\b"):
-            return choose("Overemphasis on Compensation", "Incorrect Compensation Details")
-        if has(r"\b(?:incorrect|wrong|update|change|correct|should be|instead|amount|\$|dollars|increase|decrease|remove)\b"):
-            return choose("Incorrect Compensation Details", "Overemphasis on Compensation")
-    if has(r"\b(?:titles?|headlines?|study name)\b") and has(r"\b(?:change|replace|remove|update|incorrect|wrong|should say|rename)\b"):
-        return choose("Incorrect Study Title", "Incorrect Terminology or Wording")
-    if has(r"\b(?:link|url|website|redirect)\b") and has(r"\b(?:broken|missing|doesn't work|does not work|incorrect|wrong|add|include|direct)\b"):
-        return choose("Broken or Missing Link", "Unclear Call to Action")
-    if has(r"\b(?:call to action|apply now|sign up|submit button|click here|button text|learn more)\b"):
-        return choose("Unclear Call to Action")
-    if has(r"\b(?:font|colors?|colours?|palette|spacing|layout|format|numbering|numbered|readab|text-heavy|text heavy|fit within|too small|too large|hard to read)\b"):
-        if has(r"\b(?:font|color|colour)\b"):
-            return choose("Font or Color Mismatch", "Layout or Formatting Issue")
-        return choose("Layout or Formatting Issue")
-    if has(r"\b(?:branching logic|branching|branch logic|conditional logic|logic below|branch|response options?|answer options?|questions?\s*#?\s*\d|q\s*\d|screening questions?|survey questions?|form fields?)\b"):
-        if has(r"\b(?:remove|delete|redundan|unnecessary|don't need|do not need|too many|excessive)\b"):
-            return choose("Unnecessary or Excessive Questions", "Incorrect Question Wording")
-        return choose("Incorrect Question Wording", "Unnecessary or Excessive Questions")
-    if has(r"\b(?:visit|appointment|procedure|duration|how long|days|weeks|months|sessions|multi-session|in-person|in person|remote|virtual|at-home|at home|travel|participat|study involves|what the study is|what's involved|what is involved|thank.you page|eligible page|ineligible page|contact method|contact them)\b") and has(r"\b(?:change|add|include|remove|update|incorrect|wrong|clarify|specify|replace|should|does not|doesn't|please|could|can we|missing|lack|contact|reach out)\b"):
-        return choose("Incorrect Study Participation Details", "Incorrect Study Background or Description")
-    if has(r"\b(?:exclusionary|stigmatiz|discriminat|inclusive|exclusion criteria|exclude participants unfairly)\b"):
-        return choose("Exclusionary Language in Eligibility Criteria", "Incorrect Study Eligibility Language", "Eligibility Criteria Wording Change")
-    if has(r"\b(?:only mention|only mentions|does not mention|doesn't mention|missing information|not enough information|not enough info|no real info|lack of information)\b"):
-        return choose("Missing Eligibility Criteria Details", "Missing Eligibility Criteria Detail", "Missing Eligibility Criteria Statement", "Incorrect Study Participation Details", "Incorrect Study Background or Description")
-    if has(r"\b(?:target population|intended audience|age range|age requirement|ages?\b|eligib|inclusion criteria|exclusion criteria|qualif|must be|criterion|criteria|state list|resident|reside|insurance is not required|not required to participate|required to participate|not required|cigarettes? per day|target age|gender criteria|symptoms of|only mention|missing criteria|don't include|do not include|hearing aid experience|parent or child qualify|child qualifies|non.smoker|can participate as a couple|partner is male|at least 1 in.person visit)\b"):
-        if has(r"\b(?:wrong|incorrect|inaccurate|inconsistent|does not match|doesn't match|error)\b"):
-            return choose("Eligibility Criteria Error", "Incorrect Study Eligibility Language", "Eligibility Criteria Wording Change")
-        if has(r"\b(?:remove|delete|take out|replace|no longer need|should not include)\b"):
-            return choose("Remove or Replace Eligibility Bullet", "Incorrect Study Eligibility Language", "Eligibility Criteria Wording Change")
-        if has(r"\b(?:missing|add|include|should state|needs to say)\b"):
-            return choose("Missing Eligibility Criteria Details", "Missing Eligibility Criteria Detail", "Missing Eligibility Criteria Statement", "Eligibility Criteria Wording Change")
-        if has(r"\b(?:not fit|does not fit|doesn't fit|better fit|target population|eligibility|eligible|qualify)\b"):
-            return choose("Eligibility Criteria Wording Change", "Incorrect Study Eligibility Language")
-        if area == "Landing Page" and has(r"\b(?:is this study for me|inclusion|exclusion|eligibility section)\b"):
-            return choose("Incorrect Study Eligibility Language", "Eligibility Criteria Wording Change")
-        return choose("Eligibility Criteria Wording Change", "Incorrect Question Wording")
-    if area == "Screening Form" and has(r"\b(?:questions?|q\s*\d|items?\s*\d|response options?|answer options?|fields?|branching logic|conditional logic|gender|name of child|parent.guardian)\b"):
-        if has(r"\b(?:remove|delete|redundan|unnecessary|don't need|do not need|too many|excessive)\b"):
-            return choose("Unnecessary or Excessive Questions", "Incorrect Question Wording")
-        return choose("Incorrect Question Wording", "Unnecessary or Excessive Questions")
-    if has(r"\b(?:location|located|near|city|state|address|clinic|site name|institution|university|organization|county|skyline|new brunswick|pittsburgh|houston|bethesda)\b"):
-        return choose("Incorrect Location or Organization Info", "Incorrect Study Background or Description")
-    if has(r"\b(?:study background|study description|study purpose|study goal|study aims|why is this study|explain the study|treatment resistant .* depression|clinical trial is for)\b"):
-        return choose("Incorrect Study Background or Description", "Incorrect Study Participation Details")
-    if area == "Screening Form" and has(r"\b(?:question|q\s*\d|item\s*\d|response option|answer option|state list|checkbox|select all|branching)\b"):
-        if has(r"\b(?:remove|delete|redundan|unnecessary|don't need|do not need|too many|excessive)\b"):
-            return choose("Unnecessary or Excessive Questions", "Incorrect Question Wording")
-        return choose("Incorrect Question Wording", "Unnecessary or Excessive Questions")
-    if has(r"\b(?:terminology|terms?|wordings?|reword|phrases?|language|call it|refer to|replace .* with|small texts?|sentences?|texts?|words?|headlines?|primary text|verbiage|text says|word should|should read|wording feels|doesn't flow|does not flow|clunky|grammatically|not accurate|should not use|shouldn't use|does not fit|doesn't fit)\b"):
-        return choose("Incorrect Terminology or Wording", "Incorrect Language in Ad Copy", "Incorrect Study Terminology", "Incorrect Question Wording")
-    if has(r"\b(?:discuss|discussion|talk through|pushback|concern about making|would like to consider)\b"):
-        return choose("Request for Discussion on Changes", "Incorrect Terminology or Wording")
-    if has(r"\b(?:great|looks good|love|thank you|thanks|approved|acceptable|no further edits|ready to submit)\b") and not has(r"\b(?:change|remove|replace|add|update|please|could we|can you)\b"):
-        return choose("Positive Feedback", "No Feedback Provided")
-    if has(r"\b(?:change|replace|remove|add|include|update|revise|reword|rewrite|please|could we|can you|should say|should be|should not|shouldn't|do not use|needs to|does not fit|doesn't fit|not accurate|we would like|would like to|suggest revising|can we|could you)\b"):
-        return choose({
-            "Ad Copy": ("Incorrect Language in Ad Copy",),
-            "Ad Creatives": ("Incorrect Terminology or Wording",),
-            "Carousel": ("Incorrect Terminology or Wording",),
-            "Landing Page": ("Incorrect Study Background or Description",),
-            "Physical Flyer": ("Incorrect Terminology or Wording",),
-            "Screening Form": ("Incorrect Question Wording",),
-            "Thank You page(s)": ("Incorrect Terminology or Wording",),
-            "Video Creatives": ("Incorrect Terminology or Wording",),
-        }.get(area, ("Other",)))
-    return choose(AREA_FALLBACK_CATEGORIES[area])
+        return "Spelling or grammar"
+    if (has(r"\b(?:titles?|headlines?|study name)\b") or has(r"\b(?:say|change|replace|rename)\b.{0,60}\bresearch study\b")) and has(r"\b(?:change|replace|remove|update|incorrect|wrong|should say|rename|revise|say|different)\b"):
+        return "Study title or naming"
+    if has(r"\b(?:link|hyperlink|url|website|redirect|unable to access|call to action|apply now|sign up|submit button|click(?:ing)? here|click to|places to click|button text|learn more|interested(?:\?|\b)|is this study for me|join (?:us|the|a|other|with)|help (?:cancer )?researchers?)\b"):
+        return "Links or call to action"
+    if has(r"\b(?:submission received|thank you for submitting|response recorded|successfully submitted|submission confirmation|appears you are ineligible|screening is not yet complete|incomplete screening|congratulations?)\b"):
+        return "Confirmation or eligibility outcome messaging"
+    if (area == "Carousel" and has(r"\bwhat is it used for\b")) or (has(r"\b(?:remov\w*|delet\w*|replace|swap|version|versions|placement|placements|do not (?:even )?need|don't (?:even )?need|no longer need|what is it used for)\b") and has(r"\b(?:ads?|carousel|video|creatives?|campaign|asset|headline|image|file)\b")):
+        return "Creative asset: scope, version, or placement"
+    if has(r"\b(?:version 1|version 2|prefer version|version comparison)\b"):
+        return "Creative asset: scope, version, or placement"
+    if has(r"\b(?:branching logic|branching|branch logic|conditional logic|skip logic|survey flow|question order|only shown if|conditions? are met)\b") and has(r"\b(?:question|screener|screening|survey|form|response|answer|conditions?)\b"):
+        return "Screening form: question count or flow"
+    if has(r"\b(?:response options?|answer options?|answers? to the screener|screener answers?|multiple.choice|checkbox(?:es)?|radio buttons?|dropdowns?|drop.downs?|select all)\b") and has(r"\b(?:question|screener|screening|survey|form|option|answer|select)\b"):
+        return "Screening form: response options"
+    if area == "Screening Form" and has(r"\b(?:add|include|insert|remove|delete|replace)\b") and has(r"\b(?:questions?|items?|fields?)\b"):
+        return "Screening form: question count or flow"
+    if area == "Screening Form" and has(r"\b(?:remove|delete|redundan|unnecessary|don't need|do not need|too many|excessive)\b") and has(r"\b(?:questions?|items?|fields?|screening|survey)\b"):
+        return "Screening form: question count or flow"
+    if (
+        re.search(r"\b\d{1,3}\s*(?:to|-)\s*\d{1,3}\s*years? old\b", value)
+        or (
+            has(r"\b(?:target population|intended audience|age range|age requirement|ages?\b|target age|gender criteria|male|female|men|women|teens?|teenagers?|adolescents?|youth|children|parents?|caregivers?|older adults?|healthy volunteers?|pregnan\w*|breastfeed\w*|third trimester)\b")
+            and has(r"\b(?:eligib\w*|qualif\w*|participant|include|exclude|criteria|age|target|should|must|need|only|audience|population|status|question|redundan\w*|looking for|seeking|recruit)\b")
+        )
+    ):
+        return "Eligibility: age or participant group"
+    if has(r"\b(?:diagnos\w*|symptoms?|trauma|injur\w*|coma|traumatic brain injury|disorder|condition|disease|depression|anxiety|schizophrenia|ptsd|bipolar|autis\w*|adhd|low mood|pain|cancer|diabetes|memory difficulties|memory and concentration|menopause|blood pressure)\b") and has(r"\b(?:eligib\w*|qualif\w*|participant|include|exclude|criteria|must|need|target|population|should|only|change|replace|add|remove|mention|describe|say|accurate|experience|experiencing|who)\b"):
+        return "Eligibility: diagnosis or symptoms"
+    if has(r"\b(?:ineligible|not eligible|exclusion\w*|inclusion\w*|eligib\w*|qualif\w*|criterion|criteria|state list|resident|resid\w*|live in|lives in|living in|insurance is not required|not required to participate|required to participate|cigarettes? per day|smok\w*|substances?|cannabis|non.smoker|medical conditions?|hearing aid experience|parent or child qualify|child qualifies|at least 1 in.person visit|missing criteria|upper limit|personal smartphone|smartphone access|no prior diagnos\w*|no history of|no untreated|no substance use disorders?|untreated sleep apnea|recruit individuals|want to recruit|phone screening|glp.1|wegovy|ozempic|zepbound|mounjaro|weight classification|selection bias|narrow pool)\b"):
+        return "Eligibility: inclusion/exclusion criteria"
+    if has(r"\b(?:diagnos\w*|symptoms?|traumat\w*|injur\w*|coma|traumatic brain injury|schizophrenia|ptsd|bipolar|autis\w*|adhd|depression|anxiety|disease|disorder|condition|pain|memory difficulties|memory and concentration)\b"):
+        return "Eligibility: diagnosis or symptoms"
+    if has(r"\b(?:high potential for fraud|fraud prevention|cannot (?:include|display|show)|do not display|don't display)\b") and has(r"\b(?:screen|answer|response|ad|landing page)\b"):
+        return "Screening form: response options"
+    if area == "Screening Form" and has(r"\b(?:questions?|q\s*\d|items?\s*\d|response options?|answer options?|fields?|screening|checkbox|select all|gender|name of child|parent.guardian)\b"):
+        return "Screening form: question wording"
+    if has(r"\b(?:study background|study description|study purpose|study goal|study aims|purpose.{0,20}study|goal.{0,20}study|aims?.{0,20}study|why is this study|explain the study|research question|clinical trial is for|what the study is about|study.{0,30}(?:measure|investigate|look at)|(?:requisite|enough|sufficient) amount of information|information to potential participants|concept that describes|concept is an important factor|brain processes|measuring.{0,40}research|research.{0,30}measure|traditional exercise|intolerance of uncertainty|confused with another study|findings|eating behavior|eating patterns|pharmacotherapies|melanoma|skin cancer risk|sun exposure|sunburns)\b"):
+        return "Study details: purpose or design"
+    if has(r"\b(?:visits?|appointments?|duration|how long|days|weeks|months|sessions|multi-session|in-person|in person|remote|virtual|at-home|at home|travel|schedule|time commitment|contact them|study involves|follow.up)\b"):
+        return "Study participation: visits, schedule, or duration"
+    if has(r"\b(?:procedure|treatment|mri|blood draw|lab work|medication|intervention|therapy|device|wearable|apps?|study activity|what participants do|participat|what[’']s involved|what is involved|what the study is|what will happen if i participate|interviews?|recorded|receiv\w*|transportation|parking voucher|travel assistance|measuring|measures)\b"):
+        return "Study participation: procedures or treatment"
+    if has(r"\b(?:location|located|near|city|state|address|clinic|sites?|site name|institution|university|organization|county|target area|charleston|skyline|new brunswick|pittsburgh|houston|bethesda|austin|conducted (?:in|at)|research site)\b"):
+        return "Organization: location or institution"
+    if has(r"\b(?:terminology|clinical term|medical term|medical terminology|technical term|acronym|jargon|refer to|call it|term for|bp wording|blood pressure|moderately high|dopamine|clinical trial|not a clinical trial)\b") or re.search(r"\bbp\b", value):
+        return "Terminology: clinical or study terms"
+    if has(r"\b(?:redundan\w*|repeated|repeats|too frequently|used frequently|used often|repetitive)\b"):
+        return "Copy: repetition or redundancy"
+    if has(r"\b(?:font|colors?|colours?|palette|spacing|layout|formatting|formatted|numbering|numbered|readab\w*|text.heavy|fit within|too small|too large|hard to read|template\w*|same line|line break|fit on one line|negative space|white space|redesign|notes app|reminders app)\b"):
+        return "Layout and readability"
+    if has(r"\b(?:tone|sounds? (?:too|more|less|odd|ominous|strange|awkward)|not relatable|relatable|audience fit|too formal|too casual|sensitive|appropriate for|could your|do you worry|is your (?:child|teen)|engaging|appealing)\b"):
+        return "Copy: tone and audience fit"
+    if has(r"\b(?:unclear|confusing|hard to understand|easier to understand|plain language|reading level|readability|clearer|clarify|wordy)\b"):
+        return "Copy: clarity and reading level"
+    if has(r"\b(?:add|include|insert|remov\w*|delet\w*|omit|mention)\b") and has(r"\b(?:bullet|line|detail|information|info|content|section|item|list|only|additional|missing|not enough|more text|creatives?)\b"):
+        return "Copy: content additions or removals"
+    if has(r"\b(?:attached|attachment|tracked changes|uploading as tracked|suggestions? (?:in|attached to) (?:the )?document|added in the attachment)\b"):
+        return "Attachment referenced — review"
+    if has(r"\b(?:wording|reword|phrase|words?|verbiage|term|say something|in the vein of|say.{0,20}(?:to|instead)|to say)\b"):
+        return "Copy: word choice and phrasing"
+    if has(r"\b(?:language|copy|text|sentence|blurb|paragraph|clunky|doesn't flow|does not flow|rewrite|revise)\b"):
+        return "Copy: sentence or passage revision"
+    if has(r"\b(?:change|replace|remove|add|include|update|revise|reword|rewrite|please|could we|can we|should|needs to|suggest)\b"):
+        return "Copy: sentence or passage revision"
+    if area == "Screening Form":
+        return "Screening form: question wording"
+    if area in {"Ad Copy", "Ad Creatives", "Carousel", "Landing Page", "Video Creatives"} and has(r"\b(?:headline|ad|copy|slide|frame|video|creative|campaign|study|participant|word|text|phrase|term|accurate|incorrect|not appropriate)\b"):
+        return "Copy: sentence or passage revision"
+    return "Other requested edit — review"
 
 
 def build_report(input_path):
@@ -269,16 +350,7 @@ def build_report(input_path):
 
     submissions.sort(key=lambda item: item[0])
     legacy_sections = load_legacy_taxonomy()
-    all_category_names = {category["name"] for section in legacy_sections for category in section["categories"]}
-    taxonomy_by_area = {}
-    for section in legacy_sections:
-        area = section["edit_type"]
-        names = [category["name"] for category in section["categories"]]
-        names.extend(
-            name for name in AREA_CATEGORY_ADDITIONS.get(area, [])
-            if (name in all_category_names or name == "Other") and name not in names
-        )
-        taxonomy_by_area[area] = names
+    taxonomy_by_area = {section["edit_type"]: CATEGORY_ORDER for section in legacy_sections}
     start_date, end_date = submissions[0][0], submissions[-1][0]
     months = list(month_keys(start_date, end_date))
     monthly_submissions = Counter()
@@ -337,14 +409,13 @@ def build_report(input_path):
             area_monthly[edit_type][month] += 1
             answer = extract_area_answer(row.get("Notes") or "", edit_type)
             units = feedback_units(answer)
-            category_names = taxonomy_by_area[edit_type]
             if not units:
                 category = "No Feedback Provided"
                 units = [""]
                 unit_categories = [category]
             else:
                 unit_categories = [
-                    classify_feedback(edit_type, unit, category_names) or AREA_FALLBACK_CATEGORIES[edit_type]
+                    classify_feedback(edit_type, unit)
                     for unit in units
                 ]
 
@@ -404,7 +475,10 @@ def build_report(input_path):
         area = legacy_section["edit_type"]
         category_names = taxonomy_by_area[area]
         categories = []
-        for category_name in category_names:
+        populated_categories = [
+            name for name in category_names if issue_rows[area].get(name)
+        ]
+        for category_name in populated_categories:
             records = issue_rows[area].get(category_name, [])
             csv_buffer = io.StringIO(newline="")
             writer = csv.writer(csv_buffer)
@@ -413,9 +487,24 @@ def build_report(input_path):
                 writer.writerow([record["study_id"], area, record["feedback"], category_name, record["satisfaction"], record["created_at"]])
             csv_b64 = base64.b64encode(csv_buffer.getvalue().encode("utf-8-sig")).decode("ascii")
             example = next((record["feedback"].replace("\n", " ")[:220] for record in records if record["feedback"]), "")
+            examples = []
+            seen_examples = set()
+            for record in records:
+                text = " ".join(record["feedback"].split())
+                if not text:
+                    continue
+                key = text.casefold()
+                if key in seen_examples:
+                    continue
+                seen_examples.add(key)
+                examples.append(text[:220])
+                if len(examples) == 3:
+                    break
             categories.append({
                 "name": category_name,
                 "count": len(records),
+                "description": THEME_DESCRIPTIONS[category_name],
+                "examples": examples,
                 "example": example,
                 "csv_b64": csv_b64,
                 "filename": f"2026_{re.sub(r'[^A-Za-z0-9]+', '_', area).strip('_')}_{re.sub(r'[^A-Za-z0-9]+', '_', category_name).strip('_')}.csv",
@@ -427,7 +516,7 @@ def build_report(input_path):
         top3 = [
             {"cat": category["name"], "count": category["count"]}
             for category in sorted(categories, key=lambda category: (-category["count"], category["name"]))
-            if category["count"] and category["name"] not in {"No Feedback Provided", "Positive Feedback", "Other"}
+            if category["count"] and category["name"] not in {"No Feedback Provided", "Positive feedback"}
         ][:3]
         section_months = []
         for month in months:

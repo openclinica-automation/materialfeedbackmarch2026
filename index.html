@@ -158,8 +158,12 @@
     vertical-align: top; }
   .cat-row td:last-child { text-align: center; }
   .cat-name { font-weight: 600; color: var(--navy); font-size: 13px; }
+  .cat-description { font-size: 11px; color: var(--gray-700); margin-top: 4px; line-height: 1.45; }
   .cat-example { font-size: 11px; color: var(--gray-400); margin-top: 3px;
     font-style: italic; line-height: 1.4; }
+  .cat-examples { margin: 5px 0 0; padding-left: 18px; color: var(--gray-400);
+    font-size: 11px; line-height: 1.45; }
+  .cat-examples li + li { margin-top: 3px; }
   .cat-count { font-weight: 700; font-size: 15px; color: var(--blue); }
   .no-fb-row td { color: var(--gray-400); font-style: italic; }
   .download-btn {
@@ -403,7 +407,7 @@
     <div id="year2026Sections"></div>
 
     <div class="report-note" id="year2026DataNote">
-      2026 form submissions only. Feedback is grouped into the March report categories; email addresses and phone numbers in comments are omitted.
+      2026 form submissions only. Each feedback item is assigned one primary, specific theme; ambiguous items are flagged for review. Email addresses and phone numbers in comments are omitted.
     </div>
   </div>
 
@@ -537,14 +541,19 @@ function renderReportSections(containerId, sectionData, idPrefix, navigationId =
     </div>
   `).join('');
 
-  const catRowsHtml = s.categories.map(c => `
+  const catRowsHtml = s.categories.map(c => {
+    const examples = c.examples?.length
+      ? `<ul class="cat-examples">${c.examples.map(example => `<li>${escapeHtml(example)}</li>`).join('')}</ul>`
+      : c.example && c.name !== 'No Feedback Provided'
+        ? `<div class="cat-example">"${escapeHtml(c.example)}"</div>`
+        : '';
+    return `
     <tr class="cat-row ${c.name === 'No Feedback Provided' ? 'no-fb-row' : ''}"
         style="background: ${c.name === 'No Feedback Provided' ? '#fafafa' : 'white'}">
       <td>
         <div class="cat-name">${escapeHtml(c.name)}</div>
-        ${c.example && c.name !== 'No Feedback Provided'
-          ? `<div class="cat-example">"${escapeHtml(c.example)}"</div>`
-          : ''}
+        ${c.description ? `<div class="cat-description">${escapeHtml(c.description)}</div>` : ''}
+        ${examples}
       </td>
       <td><span class="cat-count">${c.count.toLocaleString()}</span></td>
       <td>
@@ -561,7 +570,8 @@ function renderReportSections(containerId, sectionData, idPrefix, navigationId =
         }
       </td>
     </tr>
-  `).join('');
+  `;
+  }).join('');
 
   let trendHtml = '';
   if (s.section_chart) {
@@ -594,10 +604,10 @@ function renderReportSections(containerId, sectionData, idPrefix, navigationId =
       </div>` : ''}
       ${trendHtml}
       <div>
-        <div class="trend-title">Issue Categories</div>
+        <div class="trend-title">Feedback Themes</div>
         <table class="cat-table">
           <thead><tr>
-            <th>Category</th>
+            <th>Theme</th>
             <th style="width:70px;text-align:center">Count</th>
             <th style="width:80px;text-align:center">Export</th>
           </tr></thead>
