@@ -801,7 +801,7 @@ async function activateDashboard(name) {
 
   if (is2026 && !year2026Rendered) {
     try {
-      const response = await fetch('./report-2026-data.json');
+      const response = await fetch('./report-2026-data.json', { cache: 'no-cache' });
       if (!response.ok) throw new Error('2026 aggregate data was not found');
       render2026Dashboard(await response.json());
     } catch (error) {
